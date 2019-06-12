@@ -5,7 +5,70 @@
 //limits -> 0, 0 = 546, 273
 //limits - > 512, 384 = 989, 605
 
-enum Object{CIRCLE, SLIDER, SPINNER};
+enum Type{CIRCLE, SLIDER, SPINNER, NOTHING};
+struct Object {
+	Type type;
+	float x;
+	float y;
+	int timer;
+	int timer2;
+	
+
+	void setObjectType(const std::string &content) {
+		type = NOTHING;
+		int counter = 0;
+		for (int i = 0; i < content.size(); i++) {
+			if (content[i] == '|') {
+				type = SLIDER;
+				break;
+			}
+			if (content[i] == ',') {
+				counter++;
+				//break;
+			}
+		}
+		if (type == NOTHING) {
+			if (counter == 2)
+				type = CIRCLE;
+			else if (counter == 1)
+				type = SPINNER;
+
+			/*if (osuversion == 3) {
+				if (counter == 2)
+					type = CIRCLE;
+				else if (counter == 0)
+					type = SPINNER;
+			}*/
+
+			/*if (osuversion == 5 || osuversion == 6 || osuversion == 7 || osuversion == 8 || osuversion == 9) {
+				if (counter == 1)
+					type = CIRCLE;
+				else if (counter == 0)
+					type = SPINNER;
+			}*/
+
+			/*if (osuversion == 10 || osuversion == 11 || osuversion == 12 || osuversion == 13 || osuversion == 14) {
+				if (counter == 2)
+					type = CIRCLE;
+				else if (counter == 1)
+					type = SPINNER;
+			}*/
+		}
+	}
+};
+
+std::ostream& operator<<(std::ostream &os, const Type &ob) {
+	if (ob == CIRCLE)
+		os << "circle";
+	else if (ob == SLIDER)
+		os << "slider";
+	else if (ob == SPINNER)
+		os << "spinner";
+	else if (ob == NOTHING)
+		os << "nothing";
+	os << '\n';
+	return os;
+}
 
 void leftClick() {
 	INPUT    Input = { 0 };

@@ -9,52 +9,97 @@ int main() {
 	float y = 300;
 	int timer = 0;
 	int firstTimer;
-	char aux;
+	bool firstTime;
+	int aux;
+
 	std::string song;
-	std::string aux2 = "";
+	std::string content = "";
 	Object object;
 	//moveMouse(308,101);
 	//moveMouse(1229,791);
 	while (true) {
-		///press numpad 0 to change to current song
-		if (GetAsyncKeyState(VK_NUMPAD0)) {
+		///press enter to change to current song
+		if (GetAsyncKeyState(VK_RETURN)) {
 			song = changeSong();
 		}
 		///press c to start
 		if (GetAsyncKeyState(0x43)) {
+			firstTime = true;
 			//starts reading the file
 			std::ifstream file(song);
-			while (aux2 != "[HitObjects]")
-				std::getline(file, aux2);
-			aux2 = "";
+			while (content != "[HitObjects]")
+				std::getline(file, content);
+			content = "";
 			std::noskipws(file);
-			//starts reading the objects
 			std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
-			file >> x;
-			file.ignore();
-			file >> y;
-			file.ignore();
-			file >> firstTimer;
-			aux = ' ';
-			while (aux != '\n')
-				file >> aux;
-			while (file >> x || !GetAsyncKeyState(VK_ESCAPE)) {
+			//starts reading the objects
+			while (!file.eof()) {
+				//set object coords+timer
+				file >> object.x;
+				if (file.eof())
+					break;
 				file.ignore();
-				file >> y;
+				file >> object.y;
 				file.ignore();
-				file >> timer;
-
-				while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < timer - firstTimer) {
-					
+				file >> object.timer;
+				if (firstTime) {
+					firstTimer = object.timer;
+					firstTime = false;
 				}
-				//moveMouse((x*1.8) + 308, (y*1.8) + 101);
-				moveMouse((x*0.86) + 546, (y*0.86) + 273);
+				file.ignore();
+				file >> aux;
+				if (aux == 12) {
+					file.ignore();
+					file >> aux;
+					file.ignore();
+					file >> object.timer2;
+				}
+				//set object type
+				std::getline(file, content);
+				object.setObjectType(content);
+				if (object.type == CIRCLE || object.type == SLIDER) {
+					while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < object.timer - firstTimer) {
+
+					}
+					moveMouse((object.x*0.86) + 546, (object.y*0.86) + 273);
+				}
+				else if (object.type == SPINNER) {
+					std::chrono::steady_clock::time_point temp = std::chrono::high_resolution_clock::now();
+					int phase = 0;
+					bool move = true;
+					while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < object.timer2 - firstTimer) {
+						while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < object.timer - firstTimer) {
+
+						}
+						if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 30) {
+							phase++;
+							phase = phase % 4;
+							temp = std::chrono::high_resolution_clock::now();
+							move = true;
+						}
+
+						if (phase == 0 && move) {
+							moveMouse((226 * 0.86) + 546, (162 * 0.86) + 273);
+							move = false;
+						}
+						else if (phase == 1 && move) {
+							moveMouse((286 * 0.86) + 546, (162 * 0.86) + 273);
+							move = false;
+						}
+						else if (phase == 2 && move) {
+							moveMouse((286 * 0.86) + 546, (222 * 0.86) + 273);
+							move = false;
+						}
+						else if (phase == 3 && move) {
+							moveMouse((226 * 0.86) + 546, (222 * 0.86) + 273);
+							move = false;
+						}
+					}
+				}
+				//std::cout << object.type;
 				///press numpad 5 to stop
 				if (GetAsyncKeyState(VK_NUMPAD5))
 					break;
-				aux = ' ';
-				while (aux != '\n')
-					file >> aux;
 			}
 			file.close();
 		}
