@@ -6,14 +6,52 @@
 //limits -> 0, 0 = 546, 273
 //limits - > 512, 384 = 989, 605
 
-enum Type { CIRCLE, SLIDER, SPINNER, NOTHING };
+struct Vec2 {
+	float x, y;
+	Vec2(float _x, float _y) {
+		x = _x;
+		y = _y;
+	}
+	Vec2() {
+		x = 0;
+		y = 0;
+	}
+
+	Vec2 operator+(const Vec2 rhs) const{
+		return Vec2(x + rhs.x, y + rhs.y);
+	}
+	Vec2 operator-(const Vec2 rhs) const{
+		return Vec2(x - rhs.x, y - rhs.y);
+	}
+	Vec2 operator*(const Vec2 rhs) const {
+		return Vec2(x * rhs.x, y * rhs.y);
+	}
+	Vec2 operator/(const Vec2 rhs) const {
+		return Vec2(x / rhs.x, y / rhs.y);
+	}
+	Vec2& operator+=(const Vec2& rhs) {
+		this->x += rhs.x;
+		this->y += rhs.y;
+		return *this;
+	}
+
+	friend Vec2 operator*(const float lhs, const Vec2 rhs) {
+		return Vec2(rhs.x * lhs, rhs.y * lhs);
+	}
+	friend Vec2 operator*(const Vec2 lhs, const float rhs) {
+		return rhs * lhs;
+	}
+	friend Vec2 operator/(const Vec2 lhs, const float rhs) {
+		return Vec2(lhs.x / rhs, lhs.y / rhs);
+	}
+};
+
+enum Type : short { CIRCLE, SLIDER, SPINNER, NOTHING };
 struct Object {
 	Type type;
-	float x;
-	float y;
+	Vec2 pos;
 	int timer;
 	int spinnerLength;
-
 
 	void setObjectType(const std::string& content) {
 		type = NOTHING;
@@ -58,6 +96,14 @@ struct Object {
 	}
 };
 
+
+// Constants
+const float speed = 20.0f;//3.2f
+const double PI = 3.14159265;
+const Vec2 TOP_LEFT_CORNER = Vec2(501, 241);
+const Vec2 BOTTOM_RIGHT_CORNER = Vec2(1034, 640);
+const Vec2 OSU_SREEN_SIZE = Vec2(512, 384);
+
 std::ostream& operator<<(std::ostream& os, const Type& ob) {
 	if (ob == CIRCLE)
 		os << "circle";
@@ -71,47 +117,22 @@ std::ostream& operator<<(std::ostream& os, const Type& ob) {
 	return os;
 }
 
-struct vec2 {
-	float x, y;
-	vec2(float _x, float _y) {
-		x = _x;
-		y = _y;
-	}
-	vec2() {
-		x = 0;
-		y = 0;
-	}
-};
-
-vec2 operator+(vec2 a, vec2 b) {
-	return vec2(a.x + b.x, a.y + b.y);
-}
-
-vec2 operator-(vec2 a, vec2 b) {
-	return vec2(a.x - b.x, a.y - b.y);
-}
-
-vec2 operator*(float s, vec2 a) {
-	return vec2(s * a.x, s * a.y);
-}
-
-
-vec2 getBezierPoint(vec2* points, int numPoints, float t) {
-	vec2* tmp = new vec2[numPoints];
-	memcpy(tmp, points, numPoints * sizeof(vec2));
+Vec2 getBezierPoint(Vec2* points, int numPoints, float t) {
+	Vec2* tmp = new Vec2[numPoints];
+	memcpy(tmp, points, numPoints * sizeof(Vec2));
 	int i = numPoints - 1;
 	while (i > 0) {
 		for (int k = 0; k < i; k++)
 			tmp[k] = tmp[k] + t * (tmp[k + 1] - tmp[k]);
 		i--;
 	}
-	vec2 answer = tmp[0];
+	Vec2 answer = tmp[0];
 	delete[] tmp;
 	return answer;
 }
-vec2 getBezierPoint2(const std::deque<vec2>& points, const float& t) {
-	std::deque<vec2> tmp(points);
-	vec2 answer;
+Vec2 getBezierPoint2(const std::deque<Vec2>& points, const float& t) {
+	std::deque<Vec2> tmp(points);
+	Vec2 answer;
 	for (int i = points.size() - 1; i > 0; i--) {
 		for (int k = 0; k < i; k++)
 			tmp[k] = tmp[k] + t * (tmp[k + 1] - tmp[k]);
@@ -161,15 +182,14 @@ void release() {
 	Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
 	::SendInput(1, &Input, sizeof(INPUT));
 }
-void moveMouse(int x, int y) {
+void moveMouse(Vec2 pos) {
 	// Resolution change TO-DO
-	x = (x * 0.86f) + 546;
-	y = (y * 0.86f) + 273;
+	pos = (pos * (BOTTOM_RIGHT_CORNER - TOP_LEFT_CORNER) / OSU_SREEN_SIZE) + TOP_LEFT_CORNER;
 
 	double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
 	double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-	double fx = x * (65535.0f / fScreenWidth);
-	double fy = y * (65535.0f / fScreenHeight);
+	double fx = pos.x * (65535.0f / fScreenWidth);
+	double fy = pos.y * (65535.0f / fScreenHeight);
 	INPUT  Input = { 0 };
 	Input.type = INPUT_MOUSE;
 	Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
@@ -189,4 +209,3 @@ std::string changeSong() {
 	songFile.close();
 	return song;
 }
-

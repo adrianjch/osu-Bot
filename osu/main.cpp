@@ -6,10 +6,7 @@
 #include <math.h>
 
 int main() {
-	const double PI = 3.14159265;
-	const float speed = 10.f;//3.2f
-	float mouseX = 400;
-	float mouseY = 300;
+	Vec2 mousePos = Vec2(400, 300);
 	float timeMultiplier = 1; //0.75 for HT and 1.5 for DT
 	int timer = 0;
 	int timer2;
@@ -20,8 +17,8 @@ int main() {
 	std::string song;
 	std::string content = "";
 	Object object;
-	/*moveMouse(308,101);
-	moveMouse(1229,791);*/
+	//moveMouse(308,101);
+	//moveMouse(1229,791);
 	while (true) {
 		///press enter to change to current song
 		if (GetAsyncKeyState(VK_RETURN)) {
@@ -40,11 +37,11 @@ int main() {
 			///starts reading the objects
 			while (!file.eof()) {
 				///set object coords+timer
-				file >> object.x;
+				file >> object.pos.x;
 				if (file.eof())
 					break;
 				file.ignore();
-				file >> object.y;
+				file >> object.pos.y;
 				file.ignore();
 				file >> object.timer;
 				if (firstTime) {
@@ -75,40 +72,38 @@ int main() {
 				/*object.setObjectType(content);*/
 				///CIRCLE
 				if (object.type == CIRCLE || object.type == SLIDER) {
-					float incrementerX = (object.x - mouseX) / ((object.timer - timer2) / timeMultiplier);
-					float incrementerY = (object.y - mouseY) / ((object.timer - timer2) / timeMultiplier);
+					Vec2 initialPos = mousePos;
+					Vec2 deltaPos = (object.pos - mousePos) / ((object.timer - timer2) / timeMultiplier);
 					while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < (object.timer - firstTimer) / timeMultiplier) {
 						Sleep(2);
-						if (incrementerX > 0 && mouseX < object.x) {
-							mouseX += incrementerX * speed;
-							mouseY += incrementerY * speed;
-							moveMouse(mouseX, mouseY);
-						}
-						else if (incrementerX < 0 && mouseX > object.x) {
-							mouseX += incrementerX * speed;
-							mouseY += incrementerY * speed;
-							moveMouse(mouseX, mouseY);
-						}
-						else if (incrementerX == 0) {
-							if (incrementerY > 0 && mouseY < object.y) {
-								mouseX += incrementerX * speed;
-								mouseY += incrementerY * speed;
-								moveMouse(mouseX, mouseY);
-							}
-							else if (incrementerY < 0 && mouseY > object.y) {
-								mouseX += incrementerX * speed;
-								mouseY += incrementerY * speed;
-								moveMouse(mouseX, mouseY);
-							}
-						}
+						//float alpha = (object.timer - firstTimer);
+						//mousePos = initialPos + (deltaPos*alpha);
 
-
+						if (deltaPos.x > 0 && mousePos.x < object.pos.x) {
+							mousePos += deltaPos * speed;
+							moveMouse(mousePos);
+						}
+						else if (deltaPos.x < 0 && mousePos.x > object.pos.x) {
+							mousePos += deltaPos * speed;
+							moveMouse(mousePos);
+						}
+						else if (deltaPos.x == 0) {
+							if (deltaPos.y > 0 && mousePos.y < object.pos.y) {
+								mousePos += deltaPos * speed;
+								moveMouse(mousePos);
+							}
+							else if (deltaPos.y < 0 && mousePos.y > object.pos.y) {
+								mousePos += deltaPos * speed;
+								moveMouse(mousePos);
+							}
+						}
+						else
+							moveMouse(object.pos);
 					}
-					moveMouse(mouseX, mouseY);
-					rightClick();
 					timer2 = object.timer;
-					mouseX = object.x;
-					mouseY = object.y;
+					mousePos = object.pos;
+					moveMouse(mousePos);
+					rightClick();
 				}
 				///SLIDER
 				else if (object.type == SLIDER) {
@@ -144,7 +139,7 @@ int main() {
 
 						}
 						if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 2) {
-							moveMouse(256 + 50 * cos(angle * PI / 180), 192 + 50 * sin(angle * PI / 180));
+							moveMouse(Vec2(256 + 50 * cos(angle * PI / 180), 192 + 50 * sin(angle * PI / 180)));
 							temp = std::chrono::high_resolution_clock::now();
 							angle += 15;
 							angle = angle % 360;
@@ -152,8 +147,7 @@ int main() {
 					}
 					release();
 					timer2 = object.spinnerLength;
-					mouseX = object.x;
-					mouseY = object.y;
+					mousePos = object.pos;
 				}
 				///press ESCAPE to stop
 				if (GetAsyncKeyState(VK_ESCAPE))

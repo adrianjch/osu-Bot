@@ -23,6 +23,7 @@
     <ProjectGuid>{ACD4A08E-E21F-49F0-82B7-A12AB19B244D}</ProjectGuid>
     <RootNamespace>osu</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>osuBot</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
