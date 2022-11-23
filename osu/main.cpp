@@ -8,7 +8,6 @@
 
 // TODO LIST
 // - Add reverse sliders
-// - Add pass-through sliders
 // - Start using timing points (BPM and slider speed) for sliders
 // - Try to make the bot hit the first object instead of the user
 // - Try to fix bezier speeds
@@ -57,8 +56,7 @@ int main() {
 				}
 
 				///CIRCLE
-				if (object->type == Object::CIRCLE || 
-					(object->type == Object::SLIDER && std::dynamic_pointer_cast<Slider>(object)->curveType == Slider::BEZIER)) {
+				if (object->type == Object::CIRCLE) {
 					moveMouse(mousePos, object->pos, (object->timer - firstGameTimer) - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count());
 
 					mousePos = object->pos;
@@ -88,6 +86,10 @@ int main() {
 							if (type == Slider::LINEAR)
 							{
 								moveMouse(Linear(points, alpha));
+							}
+							else if (type == Slider::PASS_THROUGH)
+							{
+								moveMouse(PassThrough(points, alpha));
 							}
 							else
 							{
