@@ -59,6 +59,7 @@ void release()
 void moveMouse(Vec2 pos)
 {
 	// Resolution change TO-DO
+	// pos.y = OSU_SREEN_SIZE.y - pos.y; // some mods invert map positions
 	pos = (pos * (BOTTOM_RIGHT_CORNER - TOP_LEFT_CORNER) / OSU_SREEN_SIZE) + TOP_LEFT_CORNER;
 
 	double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;

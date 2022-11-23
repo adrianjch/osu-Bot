@@ -15,7 +15,7 @@
 // - Try to fix bezier red dots
 int main() {
 	Vec2 mousePos = Vec2(400, 300);
-	float timeMultiplier = 1.5f; //0.75 for HT and 1.5 for DT
+	float timeMultiplier = 1.0f; //0.75 for HT and 1.5 for DT
 	int previousTimer;
 	float firstGameTimer;
 	std::chrono::steady_clock::time_point firstRealTimer;
@@ -48,8 +48,8 @@ int main() {
 					// ignore the first hit since rn it's done by the player
 					mousePos = object->pos;
 					previousTimer = object->timer;
-					firstRealTimer = std::chrono::high_resolution_clock::now();
 					firstGameTimer = previousTimer;
+					firstRealTimer = std::chrono::high_resolution_clock::now();
 					std::getline(file, content);
 					object = parseObject(content);
 					firstTime = false;
@@ -57,7 +57,7 @@ int main() {
 
 				///CIRCLE
 				if (object->type == Object::CIRCLE) {
-					moveMouse(mousePos, object->pos, (object->timer - firstGameTimer) - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count());
+					moveMouse(mousePos, object->pos, (object->timer - firstGameTimer)/timeMultiplier - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count());
 
 					mousePos = object->pos;
 					previousTimer = object->timer;
@@ -65,12 +65,12 @@ int main() {
 				}
 				///SLIDER
 				else if (object->type == Object::SLIDER) {
-					moveMouse(mousePos, object->pos, (object->timer - firstGameTimer) - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count());
+					moveMouse(mousePos, object->pos, (object->timer - firstGameTimer)/timeMultiplier - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count());
 					
 					hold();
 					std::vector<Vec2> points = std::dynamic_pointer_cast<Slider>(object)->points;
 					float timer = (float)std::dynamic_pointer_cast<Slider>(object)->speed / 100.0f;
-					timer *= 187.0f;
+					timer *= 187.0f / timeMultiplier;
 					Slider::CurveType type = std::dynamic_pointer_cast<Slider>(object)->curveType;
 					int repetitions = std::dynamic_pointer_cast<Slider>(object)->repetitions;
 					int repsDone = 0;
@@ -110,10 +110,10 @@ int main() {
 				}
 				///SPINNER
 				else if (object->type == Object::SPINNER) {
-					moveMouse(mousePos, Vec2(256, 142), (object->timer - firstGameTimer) - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count());
+					moveMouse(mousePos, Vec2(256, 142), (object->timer - firstGameTimer)/timeMultiplier - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count());
 					
 					std::chrono::steady_clock::time_point temp = std::chrono::high_resolution_clock::now();
-					int spinnerEnd = std::dynamic_pointer_cast<Spinner>(object)->end;
+					int spinnerEnd = std::dynamic_pointer_cast<Spinner>(object)->end / timeMultiplier;
 					int angle = 0;
 					hold();
 					while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count() < spinnerEnd - firstGameTimer) {
