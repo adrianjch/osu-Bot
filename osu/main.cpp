@@ -7,14 +7,15 @@
 #include <math.h>
 
 // TODO LIST
-// - Add reverse sliders
+// - Move logic of the movement to their respective classes
+// - Check why it does not fully reset correctly when restarting
 // - Start using timing points (BPM and slider speed) for sliders
 // - Try to make the bot hit the first object instead of the user
 // - Try to fix bezier speeds
 // - Try to fix bezier red dots
 int main() {
 	Vec2 mousePos = Vec2(400, 300);
-	float timeMultiplier = 1; //0.75 for HT and 1.5 for DT
+	float timeMultiplier = 1.5f; //0.75 for HT and 1.5 for DT
 	int previousTimer;
 	float firstGameTimer;
 	std::chrono::steady_clock::time_point firstRealTimer;
@@ -42,7 +43,6 @@ int main() {
 			///starts reading the objects
 			while (std::getline(file, content)) {
 				object = parseObject(content);
-				//std::cout << content << std::endl;
 
 				if (firstTime) {
 					// ignore the first hit since rn it's done by the player
@@ -72,33 +72,39 @@ int main() {
 					float timer = (float)std::dynamic_pointer_cast<Slider>(object)->speed / 100.0f;
 					timer *= 187.0f;
 					Slider::CurveType type = std::dynamic_pointer_cast<Slider>(object)->curveType;
-
-					std::chrono::steady_clock::time_point start2 = std::chrono::high_resolution_clock::now();
-					std::chrono::steady_clock::time_point temp = start2;
-					float alpha = 0.0f;
-					while (alpha < 1.0f)
+					int repetitions = std::dynamic_pointer_cast<Slider>(object)->repetitions;
+					int repsDone = 0;
+					do
 					{
-						if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 1)
+						std::chrono::steady_clock::time_point start2 = std::chrono::high_resolution_clock::now();
+						std::chrono::steady_clock::time_point temp = start2;
+						float alpha = 0.0f;
+						while (alpha < 1.0f)
 						{
-							temp = std::chrono::high_resolution_clock::now();
-							auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start2).count();
-							alpha = (float)timePassed / (float)timer;
-							if (type == Slider::LINEAR)
+							if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 1)
 							{
-								moveMouse(Linear(points, alpha));
-							}
-							else if (type == Slider::PASS_THROUGH)
-							{
-								moveMouse(PassThrough(points, alpha));
-							}
-							else
-							{
-								moveMouse(Bezier(points, alpha));
+								temp = std::chrono::high_resolution_clock::now();
+								auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start2).count();
+								alpha = (float)timePassed / (float)timer;
+
+								if (type == Slider::LINEAR)
+								{
+									moveMouse(Linear(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+								}
+								else if (type == Slider::PASS_THROUGH)
+								{
+									moveMouse(PassThrough(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+								}
+								else
+								{
+									moveMouse(Bezier(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+								}
 							}
 						}
-					}
-					mousePos = points.back();// end of slider
-					previousTimer = object->timer+timer;// time when slider ends idk
+						repsDone++;
+					} while (repsDone < repetitions);
+					mousePos = (repetitions % 2 != 0) ? points.back() : points.front();// end of slider
+					previousTimer = object->timer+timer*repetitions;// time when slider ends
 					Sleep(20);
 					release();
 				}
@@ -110,9 +116,9 @@ int main() {
 					int spinnerEnd = std::dynamic_pointer_cast<Spinner>(object)->end;
 					int angle = 0;
 					hold();
-					while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < (spinnerEnd - previousTimer) / timeMultiplier) {
-						// Every 2ms, move by X angle
-						if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 2)
+					while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - firstRealTimer).count() < spinnerEnd - firstGameTimer) {
+						// Every 1ms, move by X angle
+						if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 1)
 						{
 							moveMouse(Vec2(256 + 50 * cos(angle * PI / 180), 192 + 50 * sin(angle * PI / 180)));
 							temp = std::chrono::high_resolution_clock::now();
@@ -121,7 +127,7 @@ int main() {
 						}
 					}
 					release();
-					mousePos = object->pos;
+					mousePos = object->pos + Vec2(0, -50);
 					previousTimer = spinnerEnd;
 				}
 				///press ESCAPE to stop
