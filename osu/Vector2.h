@@ -35,6 +35,14 @@ struct Vec2
 		this->y += rhs.y;
 		return *this;
 	}
+	bool operator==(const Vec2 rhs) const
+	{
+		return x == rhs.x && y == rhs.y;
+	}
+	bool operator!=(const Vec2 rhs) const
+	{
+		return !(x == rhs.x && y == rhs.y);
+	}
 
 	friend Vec2 operator*(const float lhs, const Vec2 rhs)
 	{

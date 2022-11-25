@@ -1,6 +1,5 @@
 #pragma once
 #include "Object.h"
-#include "OsuUtils.h"
 #include <sstream>
 
 class Slider : public Object
@@ -58,6 +57,17 @@ public:
 
 	void Behavior(GameController* game) override
 	{
+		// Pass-through specific
+		Vec2 center;
+		float maxAngle;
+		if (curveType == Slider::PASS_THROUGH)
+			PreCalculatePassThrough(points, center, maxAngle);
+
+		// Bezier specific
+		std::vector<BezierStruct> beziers;
+		if (curveType == Slider::BEZIER)
+			beziers = PreCalculateBezier(points);
+
 		hold();
 		float sliderLength = (float)speed / 100.0f; // this is the amount of beats the slider has
 		sliderLength *= game->GetBeatLength(timer) / (game->GetSliderMultiplier() * game->GetTimeMultiplier()); // this its length in seconds
@@ -81,11 +91,14 @@ public:
 					}
 					else if (curveType == Slider::PASS_THROUGH)
 					{
-						moveMouse(PassThrough(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+						moveMouse(PassThrough(points[0], (repsDone % 2 == 0) ? alpha : 1.0f - alpha, center, maxAngle));
 					}
 					else
 					{
-						moveMouse(Bezier(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+						if (beziers.size() == 1)
+							moveMouse(Bezier(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+						else
+							moveMouse(ConcatenatedBezier(beziers, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
 					}
 				}
 			}
