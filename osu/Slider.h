@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+#include "OsuUtils.h"
 #include <sstream>
 
 class Slider : public Object
@@ -53,6 +54,47 @@ public:
 			int y = std::stoi(seglist[i].substr(aux+1));
 			points.push_back(Vec2(x, y));
 		}
+	}
+
+	void Behavior(GameController* game) override
+	{
+		hold();
+		float sliderLength = (float)speed / 100.0f; // this is the amount of beats the slider has
+		sliderLength *= game->beatLength / (game->sliderMultiplier*game->timeMultiplier); // this its length in seconds
+		int repsDone = 0;
+		do
+		{
+			std::chrono::steady_clock::time_point start2 = std::chrono::high_resolution_clock::now();
+			std::chrono::steady_clock::time_point temp = start2;
+			float alpha = 0.0f;
+			while (alpha < 1.0f)
+			{
+				if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 1)
+				{
+					temp = std::chrono::high_resolution_clock::now();
+					auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start2).count();
+					alpha = (float)timePassed / (float)sliderLength;
+
+					if (curveType == Slider::LINEAR)
+					{
+						moveMouse(Linear(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+					}
+					else if (curveType == Slider::PASS_THROUGH)
+					{
+						moveMouse(PassThrough(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+					}
+					else
+					{
+						moveMouse(Bezier(points, (repsDone % 2 == 0) ? alpha : 1.0f - alpha));
+					}
+				}
+			}
+			repsDone++;
+		} while (repsDone < repetitions);
+		game->mousePos = (repetitions % 2 != 0) ? points.back() : points.front();// end of slider
+		game->previousTimer = timer + sliderLength * repetitions;// time when slider ends
+		//Sleep(20);
+		release();
 	}
 
 	CurveType curveType;

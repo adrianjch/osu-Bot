@@ -116,10 +116,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameController.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Circle.h" />
+    <ClInclude Include="GameController.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="OsuUtils.h" />
     <ClInclude Include="Slider.h" />

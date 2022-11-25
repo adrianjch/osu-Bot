@@ -1,64 +1,10 @@
 #pragma once
-#include "Circle.h"
-#include "Slider.h"
-#include "Spinner.h"
-
 #include <fstream>
 #include <sstream>
 #include <cmath>
 #include <iostream>
 
-std::shared_ptr<Object> parseObject(const std::string& content)
-{
-	// Get segments separated by comma
-	std::stringstream stream(content);
-	std::string segment;
-	std::vector<std::string> seglist;
-	while (std::getline(stream, segment, ','))
-	{
-		seglist.push_back(segment);
-	}
-
-	std::shared_ptr<Object> object;
-	// https://www.reddit.com/r/osugame/comments/36jyth/need_help_understanding_osu_file_format_syntax/
-	// 1 = circle
-	// 2 = slider
-	// 5 = circle (starts new combo)
-	// 6 = slider (starts new combo)
-	// 12 = spinner
-	if (seglist[3] == "12")
-	{
-		object = std::make_shared<Spinner>();
-	}
-	else if (seglist[3] == "2" || seglist[3] == "6")
-	{
-		object = std::make_shared<Slider>();
-	}
-	else
-	{
-		object = std::make_shared<Circle>();
-	}
-	object->Parse(seglist);
-
-	return object;
-}
-
-
-// Constants
 const double PI = 3.14159265;
-
-std::ostream& operator<<(std::ostream& os, const Object::Type& ob) {
-	if (ob == Object::CIRCLE)
-		os << "circle";
-	else if (ob == Object::SLIDER)
-		os << "slider";
-	else if (ob == Object::SPINNER)
-		os << "spinner";
-	else if (ob == Object::NOTHING)
-		os << "nothing";
-	os << '\n';
-	return os;
-}
 
 Vec2 Bezier(const std::vector<Vec2>& points, const float& t) {
 	std::vector<Vec2> tmp(points);
@@ -70,7 +16,7 @@ Vec2 Bezier(const std::vector<Vec2>& points, const float& t) {
 	return tmp[0];
 }
 
-Vec2 findCircle(int x1, int y1, int x2, int y2, int x3, int y3, float& radius)
+Vec2 FindCircle(int x1, int y1, int x2, int y2, int x3, int y3, float& radius)
 {
 	int x12 = x1 - x2;
 	int x13 = x1 - x3;
@@ -122,12 +68,13 @@ Vec2 findCircle(int x1, int y1, int x2, int y2, int x3, int y3, float& radius)
 Vec2 PassThrough(const std::vector<Vec2>& points, const float& t)
 {
 	float radius;
-	Vec2 center = findCircle(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, radius);
+	Vec2 center = FindCircle(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, radius);
 	Vec2 a = points[0] - center;
 	Vec2 b = points[1] - center;
 	Vec2 c = points[2] - center;
 	float dot = a.x * c.x + a.y * c.y;
-	float maxAngle = acos(dot / (radius * radius)); // In radians
+	float calc = dot / pow(radius, 2);
+	float maxAngle = acos(max(-1.0f, min(calc, 1.0f))); // In radians
 	// Rotate towards angle
 	// Hack to check if it's the right angle or its the inverted angle (360-angle)
 	float x = (a.x * cos(maxAngle)) - (a.y * sin(maxAngle));

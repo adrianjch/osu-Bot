@@ -1,7 +1,5 @@
 #pragma once
 #include <Windows.h>
-#include <chrono>
-#include "Vector2.h"
 
 const Vec2 TOP_LEFT_CORNER = Vec2(484, 197);
 const Vec2 BOTTOM_RIGHT_CORNER = Vec2(1435, 910);

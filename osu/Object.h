@@ -2,6 +2,9 @@
 #include "Vector2.h"
 #include <vector>
 #include <string>
+#include <memory>
+
+class GameController;
 
 class Object
 {
@@ -18,6 +21,7 @@ protected:
 
 public:
 	virtual void Parse(const std::vector<std::string>& segments) = 0;
+	virtual void Behavior(GameController* game) = 0;
 
 	Vec2 pos;
 	int timer;

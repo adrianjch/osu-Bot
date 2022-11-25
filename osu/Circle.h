@@ -11,6 +11,13 @@ public:
 		type = CIRCLE;
 	}
 
+	void Behavior(GameController* game) override
+	{
+		game->mousePos = pos;
+		game->previousTimer = timer;
+		rightClick();
+	}
+
 	// Parsed position could be wrong due to stacked circles
 	Vec2 realPos;
 };
