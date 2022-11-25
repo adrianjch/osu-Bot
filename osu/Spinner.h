@@ -17,10 +17,10 @@ public:
 	void Behavior(GameController* game) override
 	{
 		std::chrono::steady_clock::time_point temp = std::chrono::high_resolution_clock::now();
-		int spinnerEnd = end / game->timeMultiplier;
+		int spinnerEnd = end / game->GetTimeMultiplier();
 		int angle = 0;
 		hold();
-		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - game->firstRealTimer).count() < spinnerEnd - game->firstGameTimer)
+		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - game->GetFirstRealTimer()).count() < spinnerEnd - game->GetFirstGameTimer())
 		{
 			// Every 1ms, move by X angle
 			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - temp).count() > 1)
@@ -33,8 +33,8 @@ public:
 		}
 		release();
 
-		game->mousePos = pos + Vec2(0, -50);
-		game->previousTimer = spinnerEnd;
+		game->SetMousePos(pos + Vec2(0, -50));
+		game->SetPreviousTimer(spinnerEnd);
 	}
 
 	int duration;

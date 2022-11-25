@@ -2,7 +2,6 @@
 #include <windows.h>
 
 // TODO LIST
-// - Start using timing points (BPM and slider speed) for sliders
 // - Try to fix bezier red dots
 // - Try to fix bezier speeds
 // - Check why it does not fully reset correctly when restarting

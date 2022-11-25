@@ -29,18 +29,7 @@ void GameController::StartSong()
 		std::getline(file, content);
 	sliderMultiplier = std::stof(content.substr(content.find(":") +1));
 
-	while (content != "[TimingPoints]")
-		std::getline(file, content);
-	std::getline(file, content);
-	// Get segments separated by comma
-	std::stringstream stream(content);
-	std::string segment;
-	std::vector<std::string> seglist;
-	while (std::getline(stream, segment, ','))
-	{
-		seglist.push_back(segment);
-	}
-	beatLength = std::stof(seglist[1]);
+	ReadTimingPoints(file);
 
 	while (content != "[HitObjects]")
 		std::getline(file, content);
@@ -93,6 +82,46 @@ void GameController::StartSong()
 	file.close();
 }
 
+void GameController::SetMousePos(Vec2 newPos)
+{
+	mousePos = newPos;
+}
+
+void GameController::SetPreviousTimer(float newTimer)
+{
+	previousTimer = newTimer;
+}
+
+float GameController::GetTimeMultiplier()
+{
+	return timeMultiplier;
+}
+
+float GameController::GetSliderMultiplier()
+{
+	return sliderMultiplier;
+}
+
+float GameController::GetFirstGameTimer()
+{
+	return firstGameTimer;
+}
+
+std::chrono::steady_clock::time_point GameController::GetFirstRealTimer()
+{
+	return firstRealTimer;
+}
+
+float GameController::GetBeatLength(float timer)
+{
+	for (int i = 0; i < timingPoints.size(); i++)
+	{
+		if (timingPoints[i].timer > timer)
+			return timingPoints[i-1].beatLength;
+	}
+	return timingPoints.back().beatLength;
+}
+
 std::shared_ptr<Object> GameController::ParseObject(const std::string& content)
 {
 	// Get segments separated by comma
@@ -126,4 +155,39 @@ std::shared_ptr<Object> GameController::ParseObject(const std::string& content)
 	object->Parse(seglist);
 
 	return object;
+}
+
+void GameController::ReadTimingPoints(std::ifstream& file)
+{
+	bool original = true;
+	while (content != "[TimingPoints]")
+		std::getline(file, content);
+
+	std::getline(file, content);
+	while (!content.empty())
+	{
+		// Get segments separated by comma
+		std::stringstream stream(content);
+		std::string segment;
+		std::vector<std::string> seglist;
+		while (std::getline(stream, segment, ','))
+		{
+			seglist.push_back(segment);
+		}
+		int timer = std::stoi(seglist[0]);
+		float beatLength = std::stof(seglist[1]);
+		if (original)
+		{
+			original = false;
+			originalBeatLength = beatLength;
+		}
+		else if (beatLength < 0) // If it's an inherited point, parse it
+		{
+			beatLength = -100.0f / beatLength;
+			beatLength = originalBeatLength / beatLength;
+		}
+		timingPoints.push_back(TimingPoint(timer, beatLength));
+
+		std::getline(file, content);
+	}
 }

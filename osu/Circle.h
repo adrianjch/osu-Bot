@@ -13,8 +13,8 @@ public:
 
 	void Behavior(GameController* game) override
 	{
-		game->mousePos = pos;
-		game->previousTimer = timer;
+		game->SetMousePos(pos);
+		game->SetPreviousTimer(timer);
 		rightClick();
 	}
 

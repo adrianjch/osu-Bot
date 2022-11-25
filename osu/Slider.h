@@ -60,7 +60,7 @@ public:
 	{
 		hold();
 		float sliderLength = (float)speed / 100.0f; // this is the amount of beats the slider has
-		sliderLength *= game->beatLength / (game->sliderMultiplier*game->timeMultiplier); // this its length in seconds
+		sliderLength *= game->GetBeatLength(timer) / (game->GetSliderMultiplier() * game->GetTimeMultiplier()); // this its length in seconds
 		int repsDone = 0;
 		do
 		{
@@ -91,8 +91,8 @@ public:
 			}
 			repsDone++;
 		} while (repsDone < repetitions);
-		game->mousePos = (repetitions % 2 != 0) ? points.back() : points.front();// end of slider
-		game->previousTimer = timer + sliderLength * repetitions;// time when slider ends
+		game->SetMousePos((repetitions % 2 != 0) ? points.back() : points.front());// end of slider
+		game->SetPreviousTimer(timer + sliderLength * repetitions);// time when slider ends
 		//Sleep(20);
 		release();
 	}
