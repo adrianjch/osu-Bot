@@ -1,6 +1,6 @@
 This is an osu bot that is able to automatically play most of the beatmaps of the game. It can still be improved a bit, but it is already able to **SS** (100% accuracy) a big chunk of the beatmaps of the game. Currently the user has to correctly play the first object of the beatmap, for the bot to be able to determine when did the song start.
-![ss](./img/TheBigBlack_DT_SS.png)
-![ss](./img/Songs_Compilation_DT_SS.png)
+
+<img src="./img/TheBigBlack_DT_SS.png" width="500"/><img src="./img/Songs_Compilation_DT_SS.png" width="500"/>
 
 ---
 

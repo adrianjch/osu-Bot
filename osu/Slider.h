@@ -70,7 +70,7 @@ public:
 
 		hold();
 		float sliderLength = (float)speed / 100.0f; // this is the amount of beats the slider has
-		sliderLength *= game->GetBeatLength(timer) / (game->GetSliderMultiplier() * game->GetTimeMultiplier()); // this its length in seconds
+		sliderLength *= game->GetBeatLength(timer) / game->GetSliderMultiplier(); // this its length in seconds
 		int repsDone = 0;
 		do
 		{
@@ -83,7 +83,7 @@ public:
 				{
 					temp = std::chrono::high_resolution_clock::now();
 					auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start2).count();
-					alpha = (float)timePassed / (float)sliderLength;
+					alpha = (float)timePassed * game->GetTimeMultiplier() / (float)sliderLength;
 
 					if (curveType == Slider::LINEAR)
 					{

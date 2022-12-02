@@ -1,10 +1,6 @@
 #include "GameController.h"
 #include <windows.h>
 
-// TODO LIST
-// - Try to fix bezier speeds
-// - Check why it does not fully reset correctly when restarting
-// - Try to make the bot hit the first object instead of the user
 int main() {
 	GameController game;
 
